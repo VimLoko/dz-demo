@@ -1,20 +1,33 @@
 """
-Домашнее задание - Списки, кортежи
+Домашнее задание - Строки
 
-Создать список из трат за неделю (7 чисел)
+Принять строку формата "<руб> руб <коп> коп" (пример: 100 руб 10 коп) и вывести нормализованную сумму в рублях с двумя знаками после запятой: 100.10 ₽.
 
-Посчитать сумму, среднее, минимум и максимум.
+Поддержать варианты без копеек ("159 руб" → "159.00 ₽").
 
-Сохранить в кортеже (минимум, максимум, сумма) и вывести его.
-
+- Программа читает одну строку из input()
+- Регистр и лишние пробелы игнорируются
+- Допустимые слова для единиц
+- На выходе — сумма в виде X.YY ₽ (два знака после запятой)
+- Если формат некорректный — вывести: Некорректный формат суммы
 """
-expenses: list[float] = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0]
 
-expenses_sum: float = sum(expenses)
-expenses_len: int = len(expenses)
-expenses_avg: float = round(expenses_sum / expenses_len, 2)
-expenses_min: float = min(expenses)
-expenses_max: float = max(expenses)
-result: tuple[float, ...] = (expenses_min, expenses_max, expenses_sum)
+
+user_summa: str = input("Введите сумму: ").strip().lower()
+
+splitted_user_summa: list[str] = user_summa.split()
+monetary_units: list[str] = splitted_user_summa[1::2]
+rub: str
+kop: str
+result: str = "Некорректный формат суммы"
+if "руб" in monetary_units and "коп" in monetary_units:
+    rub, kop = splitted_user_summa[::2]
+    if rub.isdigit() and kop.isdigit():
+        result = f"{rub}.{kop.zfill(2)} ₽"
+
+if "руб" in monetary_units and "коп" not in monetary_units:
+    rub = splitted_user_summa[0]
+    if rub.isdigit():
+        result = f"{float(rub):.2f} ₽"
 
 print(result)
