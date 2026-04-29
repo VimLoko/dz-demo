@@ -1,58 +1,83 @@
 """
-Домашнее задание - Строки
+Домашнее задание - Функции
 
-Принять строку формата "<руб> руб <коп> коп" (пример: 100 руб 10 коп) и вывести
-нормализованную сумму в рублях с двумя знаками после запятой: 100.10 ₽.
+Сделать функции:
 
-Поддержать варианты без копеек ("159 руб" → "159.00 ₽").
+add_expense(expenses, value) — добавляет расход
+delete_expense(expenses, index) — удалить расход
+get_total(expenses) — возвращает сумму
+get_average(expenses) — возвращает средний расход
+print_report(expenses) — печатает красивый отчёт
 
-- Программа читает одну строку из input()
-- Регистр и лишние пробелы игнорируются
-- Допустимые слова для единиц
-- На выходе — сумма в виде X.YY ₽ (два знака после запятой)
-- Если формат некорректный — вывести: Некорректный формат суммы
+Вызывать все функции в меню. Расходы хранить в list
 
-user_summa: str = input("Введите сумму: ").strip().lower()
-
-splitted_user_summa: list[str] = user_summa.split()
-monetary_units: list[str] = splitted_user_summa[1::2]
-rub: str
-kop: str
-result: str = "Некорректный формат суммы"
-if "руб" in monetary_units and "коп" in monetary_units:
-    rub, kop = splitted_user_summa[::2]
-    if rub.isdigit() and kop.isdigit():
-        result = f"{rub}.{kop.zfill(2)} ₽"
-
-if "руб" in monetary_units and "коп" not in monetary_units:
-    rub = splitted_user_summa[0]
-    if rub.isdigit():
-        result = f"{float(rub):.2f} ₽"
-
-print(result)
-
-Сделать интерактивное меню управления расходами с помощью циклов.
-
-- Добавить расход
-- Показать все расходы
-- Показать сумму и средний расход
-- Удалить расход по номеру
-- Выход
-
-Пока сделать только выход
 """
+
+
 MENU: str = """1. Добавить расход.
 2. Показать все расходы.
 3. Показать сумму и средний расход.
 4. Удалить расход по номеру.
 0. Выход."""
 
+EXPENSES: list[float] = []
+
+
+def add_expenses(expenses: list[float], value: float) -> None:
+    """Добавляет расход"""
+    expenses.append(value)
+
+
+def delete_expenses(expenses: list[float], index: int) -> None:
+    """Удаляет расход по индексу"""
+    del expenses[index]
+
+
+def get_total(expenses: list[float]) -> float:
+    """Возвращает общую сумму расходов"""
+    return sum(expenses)
+
+
+def get_average(expenses: list[float]) -> float:
+    """Возвращает среднее значение расходов"""
+    return get_total(expenses) / len(expenses)
+
+
+def print_expenses(expenses: list[float]) -> None:
+    """Выводит все расходы"""
+    for k, v in enumerate(expenses):
+        print(f"{k} -> {v}")
+
+
+def print_report(expenses: list[float]) -> None:
+    """Печатает отчет по расходам"""
+    print("Общая сумма расходов:", get_total(expenses))
+    print("Среднее значение расхода:", get_average(expenses))
+
+
 while True:
     print(MENU)
     menu_num: int = int(input("Введите номер пункта меню: "))
-    if 0 <= menu_num <= 4:
-        if menu_num == 0:
+    match menu_num:
+        case 0:
             print("Программа будет закрыта.")
             exit()
-    else:
-        print("Вы ввели не существующий номер пункта меню.", end="\n\n")
+        case 1:
+            user_value: float = float(input("Введите сумму расхода: "))
+            add_expenses(EXPENSES, user_value)
+        case 2:
+            print("Ваши расходы:")
+            print_expenses(EXPENSES)
+        case 3:
+            print("Отчет по расходам")
+            print_report(EXPENSES)
+        case 4:
+            print_expenses(EXPENSES)
+            user_index: int = int(
+                input("Введите index расхода для удаления: "))
+            if user_index >= len(EXPENSES) or user_index < 0:
+                print("Вы ввели не существующий индекс расхода")
+            else:
+                delete_expenses(EXPENSES, user_index)
+        case _:
+            print("Вы ввели не существующий номер пункта меню.", end="\n\n")
