@@ -1,15 +1,38 @@
 """
-Сделай программу, которая работает с каталогом книг из словаря books и
-выполняет действие в зависимости от параметра запуска action. Используй
-модуль sys и получай action из sys.argv[1] (import sys)
+Нужно обработать все возможные ошибки в помощью ошибок:
 
-Если action == "filter" - С помощью filter выбери книги переданные в
-sys.argv[2]. С помощью map выведи список строк "Книга — Автор".
+- Не передан текст фильтра
+- Передана кривая команда
+- Передан кривой параметр сортировки
 
-Если action == "sort" - С помощью map подготовь список строк "Книга — Автор".
-Отсортируй список по алфавиту в зависимости от author или book.
+Сделать базовый класс ошибки и расширить нужными ошибками. Обработать их всех и вывести в консоль ошибки.
 """
 import sys
+
+
+class LibraryAppException(Exception):
+    """Базовый класс исключений для приложения"""
+    pass
+
+
+class InvalidCountOfParameters(LibraryAppException):
+    """Исключений о недопустимом количестве параметров"""
+    pass
+
+
+class InvalidAction(LibraryAppException):
+    """Исключений о недопустимом action"""
+    pass
+
+
+class InvalidKeySort(LibraryAppException):
+    """Исключений о недопустимом ключе сортировки"""
+    pass
+
+
+class InvalidFilterValue(LibraryAppException):
+    """Исключений о пустом значении фильтра"""
+    pass
 
 
 def print_books(books: dict[str: str]) -> None:
@@ -25,33 +48,35 @@ books: dict[str: str] = {
     "Евгений Онегин": "Пушкин А.С.",
 }
 
-if len(sys.argv) < 3:
-    print("Недопустимое количество параметров.")
-    exit()
-
 TYPE_ACTIONS: tuple[str] = ("sort", "filter")
 ACTIONS_SORT: tuple[str] = ("book", "author")
 
-action: str = sys.argv[1].lower()
-value: str = sys.argv[2].lower()
+try:
+    if len(sys.argv) < 3:
+        raise InvalidCountOfParameters("Недопустимое количество параметров.")
 
-if action not in TYPE_ACTIONS:
-    print(f"Введен не существующий action: {action}")
-    print(f"Допустимы следующие значения: {TYPE_ACTIONS}")
-    exit()
+    action: str = sys.argv[1].lower()
+    value: str = sys.argv[2].lower()
 
-if action == "sort" and value not in ACTIONS_SORT:
-    print(f"Введен не существующий ключ сортировки: {value}")
-    print(f"Допустимы следующие значения: {ACTIONS_SORT}")
-    exit()
+    if action not in TYPE_ACTIONS:
+        raise InvalidAction(f"Введен не существующий action: {action}")
 
+    if action == "sort" and value not in ACTIONS_SORT:
+        raise InvalidKeySort(
+            f"Введен не существующий ключ сортировки: {value}")
 
-if action == "sort":
-    sorted_books: dict[str: str] = dict(
-        sorted(books.items(), key=lambda v: v[1] if value == "author" else v[0]))
-    print_books(sorted_books)
+    if action == "sort":
+        sorted_books: dict[str: str] = dict(
+            sorted(books.items(), key=lambda v: v[1] if value == "author" else v[0]))
+        print_books(sorted_books)
 
-if action == "filter":
-    filtered_books: dict[str: str] = dict(
-        filter(lambda v: v[0].lower().count(value) + v[1].lower().count(value), books.items()))
-    print_books(filtered_books)
+    if action == "filter":
+        if not value:
+            raise InvalidFilterValue("Не передан текст фильтра")
+        filtered_books: dict[str: str] = dict(
+            filter(lambda v: v[0].lower().count(value) + v[1].lower().count(value), books.items()))
+        print_books(filtered_books)
+except (InvalidCountOfParameters, InvalidAction, InvalidKeySort, InvalidFilterValue) as e:
+    print("Ошибка приложения:", e)
+except Exception as e:
+    print("Ошибка:", e)
