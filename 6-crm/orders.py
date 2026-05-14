@@ -87,4 +87,7 @@ def edit_order(id_: int, title: str, amount: float, email: str, status: str = "n
 
 
 def remove_order(id_: int):
-    ORDERS_STORAGE = filter(lambda n: n["id"] != id_, ORDERS_STORAGE)
+    for key, order in enumerate(ORDERS_STORAGE):
+        if order["id"] == id_:
+            del ORDERS_STORAGE[key]
+            break
