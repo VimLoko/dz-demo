@@ -1,19 +1,18 @@
 """Модуль для работы с JSON"""
 import json
+from datetime import datetime
+from typing import List
 from orders import Order
 
 
-def load(path: str):
+def load(path: str) -> List[Order]:
     try:
         with open(path, "r", encoding="utf-8") as f:
-            raw = json.load(f)
-    except FileNotFoundError:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
         return []
-    except json.JSONDecodeError as e:
-        print("[WARN] Поврежденный JSON")
-        return []
-    orders: list[Order] = []
-    for item in raw.get("orders", []):
+    orders = []
+    for item in data.get("orders", []):
         try:
             order: Order = {
                 "id": int(item["id"]),
@@ -22,32 +21,32 @@ def load(path: str):
                 "email": item["email"],
                 "status": item["status"],
                 "tags": set(item.get("tags", [])),
-                "created_at": item["created_at"].strftime('%d.%m.%Y %H:%M'),
-                "due": item["due"].strftime('%d.%m.%Y %H:%M'),
-                "closed_at": item["closed_at"].strftime('%d.%m.%Y %H:%M')
+                "created_at": datetime.fromisoformat(item["created_at"]) if item.get("created_at") else None,
+                "due": datetime.fromisoformat(item["due"]) if item.get("due") else None,
+                "closed_at": datetime.fromisoformat(item["closed_at"]) if item.get("closed_at") else None,
             }
             orders.append(order)
         except Exception as e:
-            print("Пропущен заказ: {e}")
+            print(f"Пропущен заказ: {e}")
     return orders
 
 
-def save(path: str, orders: list[Order]):
+def save(path: str, orders: List[Order]):
     data = {
         "orders": [
             {
-                "id": int(item["id"]),
-                "title": item["title"],
-                "amount": float(item["amount"]),
-                "email": item["email"],
-                "status": item["status"],
-                "tags": set(item.get("tags", [])),
-                "created_at": item["created_at"].strftime('%d.%m.%Y %H:%M'),
-                "due": item["due"].strftime('%d.%m.%Y %H:%M'),
-                "closed_at": item["closed_at"].strftime('%d.%m.%Y %H:%M')
+                "id": order["id"],
+                "title": order["title"],
+                "amount": order["amount"],
+                "email": order["email"],
+                "status": order["status"],
+                "tags": list(order["tags"]) if order["tags"] else [],
+                "created_at": order["created_at"].isoformat() if order["created_at"] else None,
+                "due": order["due"].isoformat() if order["due"] else None,
+                "closed_at": order["closed_at"].isoformat() if order["closed_at"] else None,
             }
-            for item in orders
+            for order in orders
         ]
     }
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False)
+        json.dump(data, f, ensure_ascii=False, indent=2)
